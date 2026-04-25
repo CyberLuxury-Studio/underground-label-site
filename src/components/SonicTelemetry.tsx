@@ -11,11 +11,14 @@ const tracklist = [
 ];
 
 export default function SonicTelemetry() {
-  const [bars, setBars] = useState<number[]>([]);
+  const [bars, setBars] = useState<{heights: string[], duration: number}[]>([]);
 
   useEffect(() => {
     // Generate 60 bars for the waveform
-    setBars(Array.from({ length: 60 }, () => Math.random() * 100));
+    setBars(Array.from({ length: 60 }, () => ({
+      heights: [`${Math.random() * 20 + 10}%`, `${Math.random() * 80 + 20}%`, `${Math.random() * 20 + 10}%`],
+      duration: Math.random() * 0.5 + 0.3
+    })));
   }, []);
 
   return (
@@ -56,18 +59,27 @@ export default function SonicTelemetry() {
 
             {/* Waveform Visualizer */}
             <div className="h-24 w-full flex items-end gap-[2px] bg-[#0a0a0a] p-2 border border-white/5 rounded">
-              {bars.map((_, i) => (
-                <motion.div
+              <style dangerouslySetInnerHTML={{__html: `
+                @keyframes waveform {
+                  0%, 100% { height: var(--h1); }
+                  50% { height: var(--h2); }
+                }
+                .waveform-bar {
+                  flex: 1;
+                  background-color: rgba(0, 255, 0, 0.6);
+                  min-width: 1px;
+                  animation: waveform var(--duration) linear infinite;
+                }
+              `}} />
+              {bars.map((bar, i) => (
+                <div
                   key={i}
-                  animate={{
-                    height: [`${Math.random() * 20 + 10}%`, `${Math.random() * 80 + 20}%`, `${Math.random() * 20 + 10}%`]
-                  }}
-                  transition={{
-                    duration: Math.random() * 0.5 + 0.3,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                  className="flex-1 bg-[#00FF00]/60 min-w-[1px]"
+                  className="waveform-bar"
+                  style={{
+                    '--h1': bar.heights[0],
+                    '--h2': bar.heights[1],
+                    '--duration': `${bar.duration}s`
+                  } as React.CSSProperties}
                 />
               ))}
             </div>
